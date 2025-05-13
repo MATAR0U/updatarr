@@ -7,7 +7,7 @@ Use the radarr and/or sonarr API to search for films/series
 # Installation
 1. Install scripts with git
     - `git clone https://github.com/MATAR0U/updatarr`
-1. Install the script by downloading
+OR Install the script by downloading
     - Download the repository into your server
         - `wget https://github.com/MATAR0U/updatarr/archive/refs/heads/main.zip`
     - Sets execution permissions on both scripts
