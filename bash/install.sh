@@ -77,25 +77,30 @@ echo
 
 # --------- Get indexer ID by name ---------
 while true; do
-  read -p "Enter EXACT indexer name: " indexer_name
+    read -p "Enter EXACT indexer name (optional): " indexer_name
 
-  response=$(curl -s -w "HTTPSTATUS:%{http_code}" -X GET "$url_radarr/api/v3/indexer" -H "X-Api-Key: $token_api")
-  body=$(echo "$response" | sed -e 's/HTTPSTATUS\:.*//g')
-  http_status=$(echo "$response" | tr -d '\n' | sed -e 's/.*HTTPSTATUS://')
+    if [ "$indexer_name" = "" ]; then
+        yellow "Skip indexer"
+        break
+    fi
 
-  if [ "$http_status" -ne 200 ]; then
-    red "API error ($http_status)"
-    exit 1
-  fi
+    response=$(curl -s -w "HTTPSTATUS:%{http_code}" -X GET "$url_radarr/api/v3/indexer" -H "X-Api-Key: $token_api")
+    body=$(echo "$response" | sed -e 's/HTTPSTATUS\:.*//g')
+    http_status=$(echo "$response" | tr -d '\n' | sed -e 's/.*HTTPSTATUS://')
 
-  id_indexer=$(echo "$body" | jq -r --arg name "$indexer_name" '.[] | select(.name == $name) | .id')
+    if [ "$http_status" -ne 200 ]; then
+        red "API error ($http_status)"
+        exit 1
+    fi
 
-  if [ -n "$id_indexer" ]; then
-    green "[OK] Indexer found: $indexer_name"
-    break
-  else
-    red "Indexer not found: $indexer_name"
-  fi
+    id_indexer=$(echo "$body" | jq -r --arg name "$indexer_name" '.[] | select(.name == $name) | .id')
+
+    if [ -n "$id_indexer" ]; then
+        green "[OK] Indexer found: $indexer_name"
+        break
+    else
+        red "Indexer not found: $indexer_name"
+    fi
 done
 
 # --------- Save configuration ---------

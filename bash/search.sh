@@ -127,10 +127,14 @@ get_movie_list() {
 }
 
 # Main Execution
-if ! check_indexer; then
-    yellow "Indexer '${indexer_name}' failed. Running fallback test for all indexers..."
-    test_all_indexers
-    exit 1
+if [[ -n "$indexer_name" ]]; then
+    if ! check_indexer; then
+        yellow "Indexer '${indexer_name}' failed. Running fallback test for all indexers..."
+        test_all_indexers
+        exit 1
+    fi
+else
+    yellow "No indexer_name provided — skipping indexer check."
 fi
 
 get_movie_list
