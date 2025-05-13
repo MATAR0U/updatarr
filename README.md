@@ -5,9 +5,12 @@ Use the radarr and/or sonarr API to search for films/series
 > The script is currently only compatible with radarr, sonarr will be soon
 
 # Installation
-1/ Download the "bash" directory into your server
-
-2/ Sets execution permissions on both scripts
+1. Install scripts with git
+    - `git clone https://github.com/MATAR0U/updatarr`
+1. Install the script by downloading
+    - Download the repository into your server
+        - `wget https://github.com/MATAR0U/updatarr/archive/refs/heads/main.zip`
+    - Sets execution permissions on both scripts
 ```bash
 chmod +x install.sh
 chmod +x search.sh
