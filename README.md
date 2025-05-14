@@ -23,7 +23,10 @@ chmod +x search.sh
 5/ DONE, you can set up a scheduled task (cron or other) to run the script periodically
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 > [!TIP]
 > Use `--radarr` or `--sonarr` option
 > `--no-indexer` to skip indexer check if one is defined
@@ -40,9 +43,15 @@ Once all the films have been searched, the script will start again from the begi
 # Planned improvements
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 - Sonarr compatibility
 
 - Search for films with “unsatisfactory limit” when all missing films have been searched
+=======
+- [x] Sonarr compatibility
+
+- [ ] Search for films with “unsatisfactory limit” when all missing films have been searched
+>>>>>>> Stashed changes
 =======
 - [x] Sonarr compatibility
 
