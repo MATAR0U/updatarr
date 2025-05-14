@@ -22,6 +22,13 @@ chmod +x search.sh
 
 5/ DONE, you can set up a scheduled task (cron or other) to run the script periodically
 
+<<<<<<< Updated upstream
+=======
+> [!TIP]
+> Use `--radarr` or `--sonarr` option
+> `--no-indexer` to skip indexer check if one is defined
+
+>>>>>>> Stashed changes
 # How it works
 
 The script will retrieve the list of missing films, sort them by date of addition from the most recent to the oldest, and search for the first
@@ -32,8 +39,14 @@ Once all the films have been searched, the script will start again from the begi
 
 # Planned improvements
 
+<<<<<<< Updated upstream
 - Sonarr compatibility
 
 - Search for films with “unsatisfactory limit” when all missing films have been searched
+=======
+- [x] Sonarr compatibility
+
+- [ ] Search for films with “unsatisfactory limit” when all missing films have been searched
+>>>>>>> Stashed changes
 
 - All suggestions are welcome!
