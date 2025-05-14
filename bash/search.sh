@@ -28,6 +28,7 @@ while [[ $# -gt 0 ]]; do
             api_url="$radarr_url"
             api_key="$radarr_key"
             api_indexer="$radarr_indexer"
+            list_ini="$radarr_ini"
             shift
             ;;
         --sonarr)
@@ -39,6 +40,7 @@ while [[ $# -gt 0 ]]; do
             api_url="$sonarr_url"
             api_key="$sonarr_key"
             api_indexer="$sonarr_indexer"
+            list_ini="$sonarr_ini"
             shift
             ;;
         --no-indexer)
@@ -63,7 +65,7 @@ fi
 
 
 # Check required variables
-required_vars=(api_url api_key list_ini)
+required_vars=(api_url api_key list_ini unsatisfactory)
 for var in "${required_vars[@]}"; do
     if [[ -z "${!var}" ]]; then
         red "Error: Missing variable '$var' in settings file."
@@ -194,6 +196,41 @@ get_item_to_scan() {
     echo "$found"
 }
 
+# Search for unsatisfactory movie
+get_movie_unsatisfactory() {
+    yellow "Recovery of the film with the lowest score..."
+    movies_list=$(curl -s -X GET "${api_url}/api/v3/movie" -H "X-Api-Key: ${api_key}")
+    movie_ids_brut=$(echo "$movies_list" | jq '[.[] | .movieFileId]')
+    movie_ids=$(echo "$movie_ids_brut" | sed 's/null//g' | tr -d '[]' | tr -d '\n' | tr ',' ' ')
+    movie_ids_array=($movie_ids)
+
+    lowest_score=-1
+    lowest_score_id=""
+
+    for movie_id in "${movie_ids_array[@]}"; do
+        if [ "$movie_id" -ne 0 ]; then
+            # Get info
+            movie_info=$(curl -s -X GET "${api_url}/api/v3/moviefile/$movie_id" -H "X-Api-Key: $api_key")
+
+            score=$(echo $movie_info | jq -r ".customFormatScore")
+
+            # Verify score
+            if [ "$lowest_score" -eq -1 ] || [ "$score" -lt "$lowest_score" ]; then
+                lowest_score=$score
+                lowest_score_id=$(echo $movie_info | jq -r ".movieId")
+            fi
+        fi
+    done
+
+    if [ -n "$lowest_score_id" ]; then
+        green "Movie with lowest score : ID $lowest_score_id = $lowest_score"
+        send_command "$api_url" "$api_key" "MoviesSearch" "[$lowest_score_id]" "movieIds"
+    else
+        yellow "No film has a score below -1"
+    fi
+}
+get_movie_unsatisfactory
+exit
 # Function: Retrieve and process item list
 get_item_list() {
     if [ "$radarr" = "true" ]; then
@@ -217,6 +254,9 @@ get_item_list() {
 
     result=$(get_item_to_scan 1)
     if [[ "$result" == "nok" ]]; then
+        if unsatisfactory && radarr; then
+            get_movie_unsatisfactory
+        fi
         rm -f "$list_ini"
         exit 1
     else

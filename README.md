@@ -35,6 +35,8 @@ Once all the films have been searched, the script will start again from the begi
 
 - [x] Sonarr compatibility
 
-- [ ] Search for films with “unsatisfactory limit” when all missing films have been searched
+- [x] Search for films with “unsatisfactory limit” when all missing films have been searched
+
+- [ ] Reorganize the folder (create ini folder)
 
 - All suggestions are welcome!

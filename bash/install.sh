@@ -179,16 +179,37 @@ while true; do
   break
 done
 
+# --------- Search for unsatisfactory limit ---------
+while true; do
+  read -p "Also look for unsatisfactory limit? (y/n): " confirm_unlimit_item
+  case "$confirm_unlimit_item" in
+    y)
+      unsatisfactory=true
+      break
+      ;;
+    n)
+      unsatisfactory=false
+      break
+      ;;
+    *)
+      red "Invalid choice. Please enter y or n."
+      continue
+      ;;
+  esac
+done
+
 # --------- Save configuration ---------
 config_file="$working_dir/settings.ini"
 {
   echo "radarr_url=\"$radarr_url\""
   echo "radarr_key=\"$radarr_key\""
   echo "radarr_indexer=\"$radarr_indexer\""
+  echo "radarr_ini=\"$working_dir/radarr_list.ini\""
   echo "sonarr_url=\"$sonarr_url\""
   echo "sonarr_key=\"$sonarr_key\""
   echo "sonarr_indexer=\"$sonarr_indexer\""
-  echo "list_ini=\"$working_dir/list.ini\""
+  echo "sonarr_ini=\"$working_dir/sonarr_list.ini\""
+  echo "unsatisfactory=$unsatisfactory"
 } > "$config_file"
 
 green "Configuration saved to $config_file"
