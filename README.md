@@ -1,6 +1,9 @@
 # updatarr
 Use the radarr and/or sonarr API to search for films/series
 
+> [!Warning]
+> The script is currently only compatible with radarr, sonarr will be soon
+
 # Installation
 1. Install scripts
     - `git clone https://github.com/MATAR0U/updatarr`
@@ -19,7 +22,7 @@ chmod +x search.sh
 
 5/ DONE, you can set up a scheduled task (cron or other) to run the script periodically
 
-> [!Tips]
+> [!TIP]
 > Use `--radarr` or `--sonarr` option
 > `--no-indexer` to skip indexer check if one is defined
 
@@ -33,8 +36,8 @@ Once all the films have been searched, the script will start again from the begi
 
 # Planned improvements
 
-[x] Sonarr compatibility
+- [x] Sonarr compatibility
 
-[ ] Search for films with “unsatisfactory limit” when all missing films have been searched
+- [ ] Search for films with “unsatisfactory limit” when all missing films have been searched
 
 - All suggestions are welcome!
