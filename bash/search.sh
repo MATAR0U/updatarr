@@ -229,8 +229,7 @@ get_movie_unsatisfactory() {
         yellow "No film has a score below -1"
     fi
 }
-get_movie_unsatisfactory
-exit
+
 # Function: Retrieve and process item list
 get_item_list() {
     if [ "$radarr" = "true" ]; then
