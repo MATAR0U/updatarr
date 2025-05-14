@@ -52,63 +52,142 @@ while true; do
 done
 
 # --------- Ask for Radarr URL ---------
-radarr_regex='^[A-Za-z]+://((25[0-5]|2[0-4][0-9]|1?[0-9]{1,2})\.){3}(25[0-5]|2[0-4][0-9]|1?[0-9]{1,2}):[0-9]+$'
-
+url_regex='^[A-Za-z]+://((25[0-5]|2[0-4][0-9]|1?[0-9]{1,2})\.){3}(25[0-5]|2[0-4][0-9]|1?[0-9]{1,2}):[0-9]+$'
 while true; do
-  read -p "Radarr URL (http://{ip}:{port}): " url_radarr
+  while true; do
+    read -p "Radarr URL (http://{ip}:{port}) (blank for skip): " radarr_url
 
-  if [[ "$url_radarr" =~ $radarr_regex ]]; then
-    yellow "Checking connection to $url_radarr..."
-    if curl -Is --max-time 15 "$url_radarr" | head -n 1 | grep -qE "HTTP/[0-9\.]+\s+[0-9]+"; then
-      green "[OK] $url_radarr is reachable"
+    if [[ "$radarr_url" = "" ]]; then
       break
-    else
-      red "[KO] $url_radarr is not reachable"
-      yellow "Check the URL or network access"
     fi
-  else
-    red "Invalid URL format"
+
+    if [[ "$radarr_url" =~ $url_regex ]]; then
+      yellow "Checking connection to $radarr_url..."
+      if curl -Is --max-time 15 "$radarr_url" | head -n 1 | grep -qE "HTTP/[0-9\.]+\s+[0-9]+"; then
+        green "[OK] $radarr_url is reachable"
+        break
+      else
+        red "[KO] $radarr_url is not reachable"
+        yellow "Check the URL or network access"
+      fi
+    else
+      red "Invalid URL format"
+    fi
+  done
+
+  if [[ "$radarr_url" = "" ]]; then
+      yellow "Skipping radarr configuration..."
+      break
   fi
+
+  # --------- API Token ---------
+  read -s -p "Radarr API key: " radarr_key
+  echo
+
+  # --------- Get indexer ID by name ---------
+  while true; do
+      read -p "EXACT radarr indexer name (optional): " radarr_indexer
+
+      if [ "$radarr_indexer" = "" ]; then
+          yellow "Skip indexer"
+          break
+      fi
+
+      response=$(curl -s -w "HTTPSTATUS:%{http_code}" -X GET "$radarr_url/api/v3/indexer" -H "X-Api-Key: $radarr_key")
+      body=$(echo "$response" | sed -e 's/HTTPSTATUS\:.*//g')
+      http_status=$(echo "$response" | tr -d '\n' | sed -e 's/.*HTTPSTATUS://')
+
+      if [ "$http_status" -ne 200 ]; then
+          red "API error ($http_status)"
+          exit 1
+      fi
+
+      id_indexer=$(echo "$body" | jq -r --arg name "$radarr_indexer" '.[] | select(.name == $name) | .id')
+
+      if [ -n "$id_indexer" ]; then
+          green "[OK] Indexer found: $radarr_indexer"
+          break
+      else
+          red "Indexer not found: $radarr_indexer"
+      fi
+  done
+  green "[OK] Radarr configuration"
+  break
 done
 
-# --------- API Token ---------
-read -s -p "Enter API key: " token_api
-echo
-
-# --------- Get indexer ID by name ---------
 while true; do
-    read -p "Enter EXACT indexer name (optional): " indexer_name
+  # --------- Ask for Sonarr URL ---------
 
-    if [ "$indexer_name" = "" ]; then
-        yellow "Skip indexer"
-        break
+  while true; do
+    read -p "Sonarr URL (http://{ip}:{port}) (blank for skip): " sonarr_url
+
+    if [[ "$sonarr_url" = "" ]]; then
+      break
     fi
 
-    response=$(curl -s -w "HTTPSTATUS:%{http_code}" -X GET "$url_radarr/api/v3/indexer" -H "X-Api-Key: $token_api")
-    body=$(echo "$response" | sed -e 's/HTTPSTATUS\:.*//g')
-    http_status=$(echo "$response" | tr -d '\n' | sed -e 's/.*HTTPSTATUS://')
-
-    if [ "$http_status" -ne 200 ]; then
-        red "API error ($http_status)"
-        exit 1
-    fi
-
-    id_indexer=$(echo "$body" | jq -r --arg name "$indexer_name" '.[] | select(.name == $name) | .id')
-
-    if [ -n "$id_indexer" ]; then
-        green "[OK] Indexer found: $indexer_name"
+    if [[ "$sonarr_url" =~ $url_regex ]]; then
+      yellow "Checking connection to $sonarr_url..."
+      if curl -Is --max-time 15 "$sonarr_url" | head -n 1 | grep -qE "HTTP/[0-9\.]+\s+[0-9]+"; then
+        green "[OK] $sonarr_url is reachable"
         break
+      else
+        red "[KO] $sonarr_url is not reachable"
+        yellow "Check the URL or network access"
+      fi
     else
-        red "Indexer not found: $indexer_name"
+      red "Invalid URL format"
     fi
+  done
+
+  if [[ "$sonarr_url" = "" ]]; then
+      yellow "Skipping sonarr configuration..."
+      break
+  fi
+
+  # --------- API Token ---------
+  read -s -p "Sonarr API key: " sonarr_key
+  echo
+
+  # --------- Get indexer ID by name ---------
+  while true; do
+      read -p "EXACT Sonarr indexer name (optional): " sonarr_indexer
+
+      if [ "$sonarr_indexer" = "" ]; then
+          yellow "Skip indexer"
+          break
+      fi
+
+      response=$(curl -s -w "HTTPSTATUS:%{http_code}" -X GET "$sonarr_url/api/v3/indexer" -H "X-Api-Key: $sonarr_key")
+      body=$(echo "$response" | sed -e 's/HTTPSTATUS\:.*//g')
+      http_status=$(echo "$response" | tr -d '\n' | sed -e 's/.*HTTPSTATUS://')
+
+      if [ "$http_status" -ne 200 ]; then
+          red "API error ($http_status)"
+          exit 1
+      fi
+
+      id_indexer=$(echo "$body" | jq -r --arg name "$sonarr_indexer" '.[] | select(.name == $name) | .id')
+
+      if [ -n "$id_indexer" ]; then
+          green "[OK] Indexer found: $sonarr_indexer"
+          break
+      else
+          red "Indexer not found: $sonarr_indexer"
+      fi
+  done
+  green "[OK] Sonarr configuration"
+  break
 done
 
 # --------- Save configuration ---------
 config_file="$working_dir/settings.ini"
 {
-  echo "url_radarr=\"$url_radarr\""
-  echo "token_api=\"$token_api\""
-  echo "indexer_name=\"$indexer_name\""
+  echo "radarr_url=\"$radarr_url\""
+  echo "radarr_key=\"$radarr_key\""
+  echo "radarr_indexer=\"$radarr_indexer\""
+  echo "sonarr_url=\"$sonarr_url\""
+  echo "sonarr_key=\"$sonarr_key\""
+  echo "sonarr_indexer=\"$sonarr_indexer\""
   echo "list_ini=\"$working_dir/list.ini\""
 } > "$config_file"
 
