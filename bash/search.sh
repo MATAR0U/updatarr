@@ -255,6 +255,7 @@ get_item_list() {
     if [[ "$result" == "nok" ]]; then
         if unsatisfactory && radarr; then
             get_movie_unsatisfactory
+            rm -f "$list_ini"
         fi
         rm -f "$list_ini"
         exit 1
